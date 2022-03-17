@@ -13,6 +13,15 @@ ui <- fluidPage(
       sliderInput("Npop", h3("Total Number of simulations to run"),
                   min = 0, max = 100, value = 25),
       
+      sliderInput("pe", h3("Pe Mean Extinction Rate"),
+                  min = 0, max = 1, value = 0.5),
+      
+      sliderInput("Ci", h3("Pi Mean Colonization Rate"),
+                  min = 0, max = 1, value = 0.5),
+      
+      sliderInput("npatchs", h3("Total Number of habitat patches"),
+                  min = 0, max = 20, value = 10),
+      
       sliderInput("Nyears", h3("Total Number of years to run the simulation"),
                   min = 0, max = 100, value = 50),
       
@@ -20,23 +29,24 @@ ui <- fluidPage(
       sliderInput("p0", h3("Proportion of initial patches populated"),
                   min = 0, max = 1, value = 0.5),
      
-      sliderInput("pe", h3("Mean Extinction Rate"),
-                min = 0, max = 1, value = 0.5),
-   
-      sliderInput("Ci", h3("Mean Colonization Rate"),
-              min = 0, max = 1, value = 0.5),
       
-      sliderInput("D", h3("Habitat Destruction rate"),
+      
+      sliderInput("D", h3("D Habitat Destruction rate"),
                   min = 0, max = 1, value = 0)),
     
     
     
-      mainPanel(plotOutput("immigrationextinctionplot"),
-                plotOutput("plot"),
-                verbatimTextOutput("equilfraction"),
-                plotOutput("landemodel" ),
+      mainPanel(
+               
                 plotOutput("plotproprain"),
-                plotOutput("coresatmodel")
+                verbatimTextOutput("equilfraction"),
+                verbatimTextOutput("Px"),
+                
+                plotOutput("coresatmodel"),
+                
+                plotOutput("plot"),
+                plotOutput("landemodel" ),
+                plotOutput("immigrationextinctionplot")
                 
                 ))
   
@@ -54,7 +64,7 @@ server <- function(input, output, session) {
     out <- MetaSim(NSims=input$Npop, method = "levins", e = input$pe, p0 = input$p0, ci = input$Ci, Time = input$Nyears)
     pops <- out$Ns
     matplot(out$t, pops, type='l', xlab = "Years", ylab= "Proportion of patches occupied", ylim = c(0,1))
-    title(main=expression(paste("p"[i]~"f(1-f) - p"[e]~"f   Levin's model")))
+    title(main=expression(paste("p"[i]~"f(1-f) - p"[e]~"f   Levin's internal colonization model")))
     
     if(input$Npop == 1){
       # create a block of 50 grid cells:
@@ -102,6 +112,12 @@ server <- function(input, output, session) {
     cat("equlibrium fraction of patches occupied f = ", f)
   })
   
+  output$Px <- renderPrint({
+    # f = pi/(pi + pe).
+    Px <- 1- as.vector(input$pe)^as.vector(input$npatchs)
+    cat("Probability of global persistance = ", Px)
+  })
+  
   output$plotproprain <- renderPlot({
    
     
@@ -110,7 +126,7 @@ server <- function(input, output, session) {
     pops <- out$Ns
     matplot(out$t, pops, type='l', ylab= "Proportion of patches occupied", ylim = c(0,1))
     #title(main=paste(out$method, "propagule rain model (Pi*(1-f) - Pe*f*(1-f))"))
-    title(main=expression(paste("p"[i]~"(1-f) - p"[e]~"f(1-f)   Gotelli's Propagule Rain model")))
+    title(main=expression(paste("p"[i]~"(1-f) - p"[e]~"f  Propagule Rain model")))
     
     
   })
@@ -123,7 +139,7 @@ server <- function(input, output, session) {
     pops <- out$Ns
     matplot(out$t, pops, type='l', xlab = "Years", ylab= "Proportion of patches occupied", ylim = c(0,1))
     #title(main=paste(out$method, "core-satellite metapopulation model (Pi*f*(1-f) - Pe*f*(1-f))"))
-    title(main=expression(paste("p"[i]~"f(1-f) - p"[e]~"f(1-f)   Hanski's core-satellite metapopulation model")))
+    title(main=expression(paste("p"[i]~"f(1-f) - p"[e]~"f(1-f)   Hanski's Internal colonization + rescue effect model")))
     
     
   })
