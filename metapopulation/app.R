@@ -103,13 +103,13 @@ server <- function(input, output, session) {
   output$equilfraction <- renderPrint({
     # f = pi/(pi + pe).
     f <- input$Ci/ (input$Ci + input$pe)
-  cat("equlibrium patch f = ", f)
+  cat("equlibrium fraction of patches occupied (fhat) = ", f)
   })
   
   output$fractionpatches <- renderPrint({
     # f = pi/(pi + pe).
     f <- input$Ci/ (input$Ci + input$pe)
-    cat("equlibrium fraction of patches occupied f = ", f)
+    cat("equlibrium fraction of patches occupied (fhat) = ", f)
   })
   
   output$Px <- renderPrint({
